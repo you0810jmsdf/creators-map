@@ -402,6 +402,7 @@
   ></script>
   <script>
     const DATA_BASE_URL = 'https://script.google.com/macros/s/AKfycbzR2b5gTAWEzWQIG31OLNvMjnHjo5r7UfQLkHwHaMfjtZYJ9bKtilMzU5J85GpKOFWb/exec?mode=json';
+    const LOCAL_DATA_URL = './creators.json';
     const CATEGORY_STYLES = {
       '革・レザー': { color: '#8a5a44' },
       '布・糸・手芸': { color: '#d94677' },
@@ -740,6 +741,25 @@
       applyFilters();
     }
 
+    function loadLocalData(reason) {
+      const retryLabel = reason ? 'データを代替読み込み中です。' : 'データを読み込み中です。';
+      setStatus(retryLabel);
+
+      fetch(LOCAL_DATA_URL + '?_=' + Date.now(), { cache: 'no-store' })
+        .then(function(response) {
+          if (!response.ok) {
+            throw new Error('HTTP ' + response.status);
+          }
+          return response.json();
+        })
+        .then(function(payload) {
+          handleCreators(payload);
+        })
+        .catch(function() {
+          setStatus('データ取得に失敗しました。時間をおいて再読み込みしてください。');
+        });
+    }
+
     function loadData(attempt) {
       const retryCount = attempt || 0;
       const callbackName = '__creatorsMapData_' + Date.now() + '_' + retryCount;
@@ -754,7 +774,7 @@
           loadData(retryCount + 1);
           return;
         }
-        setStatus('データ取得に失敗しました。Safari の再読み込みもお試しください。');
+        loadLocalData('jsonp-timeout');
       }, 8000);
 
       function cleanup() {
@@ -784,7 +804,7 @@
           loadData(retryCount + 1);
           return;
         }
-        setStatus('データ取得に失敗しました。Apps Script 側の JSONP 対応を確認してください。');
+        loadLocalData('jsonp-error');
       };
       document.body.appendChild(script);
     }
