@@ -436,7 +436,11 @@
     }
 
     function styleForCategory(category) {
-      return CATEGORY_STYLES[category] || CATEGORY_STYLES['その他・複合'];
+      return CATEGORY_STYLES[normalizeCategory(category)] || CATEGORY_STYLES['その他・複合'];
+    }
+
+    function normalizeCategory(category) {
+      return CATEGORY_STYLES[category] ? category : 'その他・複合';
     }
 
     function setStatus(message) {
@@ -494,7 +498,7 @@
     }
 
     function popupHtml(creator) {
-      const category = creator.category || 'その他・複合';
+      const category = normalizeCategory(creator.category || 'その他・複合');
       const color = styleForCategory(category).color;
       const lines = [];
       if (creator.works) lines.push('<div class="popup-line"><strong>代表作:</strong> ' + escapeHtml(creator.works) + '</div>');
@@ -556,7 +560,7 @@
       setStatus('');
 
       items.forEach(function(creator) {
-        const category = creator.category || 'その他・複合';
+        const category = normalizeCategory(creator.category || 'その他・複合');
         const color = styleForCategory(category).color;
         const card = document.createElement('article');
         card.className = 'card';
@@ -584,7 +588,7 @@
     }
 
     function matchesCreator(creator) {
-      const category = creator.category || 'その他・複合';
+      const category = normalizeCategory(creator.category || 'その他・複合');
       const areaOk = !state.area || creator.city === state.area;
       const categoryOk = state.activeCategories.has(category);
       const keyword = state.keyword;
