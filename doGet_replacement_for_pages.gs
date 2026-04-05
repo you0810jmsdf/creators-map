@@ -42,7 +42,7 @@ function doGet(e) {
     const data = getCreators();
 
     if (e.parameter.callback) {
-      const callback = String(e.parameter.callback).replace(/[^\w.$]/g, '');
+      const callback = String(e.parameter.callback).replace(/[^\w$]/g, '');
       return ContentService
         .createTextOutput(callback + '(' + JSON.stringify(data) + ');')
         .setMimeType(ContentService.MimeType.JAVASCRIPT);

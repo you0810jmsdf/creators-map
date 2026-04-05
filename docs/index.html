@@ -401,7 +401,7 @@
     crossorigin=""
   ></script>
   <script>
-    const DATA_URL = 'https://script.google.com/macros/s/AKfycbzR2b5gTAWEzWQIG31OLNvMjnHjo5r7UfQLkHwHaMfjtZYJ9bKtilMzU5J85GpKOFWb/exec?mode=json&callback=window.__creatorsMapData';
+    const DATA_BASE_URL = 'https://script.google.com/macros/s/AKfycbzR2b5gTAWEzWQIG31OLNvMjnHjo5r7UfQLkHwHaMfjtZYJ9bKtilMzU5J85GpKOFWb/exec?mode=json';
     const CATEGORY_STYLES = {
       '革・レザー': { color: '#8a5a44' },
       '布・糸・手芸': { color: '#d94677' },
@@ -740,16 +740,50 @@
       applyFilters();
     }
 
-    function loadData() {
-      setStatus('データを読み込み中です。');
-      window.__creatorsMapData = function(payload) {
+    function loadData(attempt) {
+      const retryCount = attempt || 0;
+      const callbackName = '__creatorsMapData_' + Date.now() + '_' + retryCount;
+      let finished = false;
+
+      setStatus(retryCount === 0 ? 'データを読み込み中です。' : 'データを再読み込み中です。');
+
+      const script = document.createElement('script');
+      const timeoutId = window.setTimeout(function() {
+        cleanup();
+        if (retryCount < 1) {
+          loadData(retryCount + 1);
+          return;
+        }
+        setStatus('データ取得に失敗しました。Safari の再読み込みもお試しください。');
+      }, 8000);
+
+      function cleanup() {
+        if (finished) return;
+        finished = true;
+        window.clearTimeout(timeoutId);
+        try {
+          delete window[callbackName];
+        } catch (error) {
+          window[callbackName] = undefined;
+        }
+        if (script.parentNode) {
+          script.parentNode.removeChild(script);
+        }
+      }
+
+      window[callbackName] = function(payload) {
+        cleanup();
         handleCreators(payload);
       };
 
-      const script = document.createElement('script');
-      script.src = DATA_URL + '&_=' + Date.now();
-      script.async = true;
+      script.src = DATA_BASE_URL + '&callback=' + encodeURIComponent(callbackName) + '&_=' + Date.now();
+      script.async = false;
       script.onerror = function() {
+        cleanup();
+        if (retryCount < 1) {
+          loadData(retryCount + 1);
+          return;
+        }
         setStatus('データ取得に失敗しました。Apps Script 側の JSONP 対応を確認してください。');
       };
       document.body.appendChild(script);
