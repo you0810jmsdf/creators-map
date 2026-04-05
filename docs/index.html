@@ -414,6 +414,9 @@
       'その他・複合': { color: '#6b7280' }
     };
     const AREA_ORDER = ['', '印西市', '白井市', '栄町', 'その他'];
+    const DEFAULT_CENTER = [35.79, 140.12];
+    const DEFAULT_ZOOM = 11;
+    const FOCUS_CITIES = new Set(['印西市', '白井市', '栄町']);
 
     const state = {
       creators: [],
@@ -451,7 +454,7 @@
       state.map = L.map('map', {
         zoomControl: true,
         scrollWheelZoom: true
-      }).setView([35.785, 140.15], 11);
+      }).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
@@ -516,6 +519,7 @@
       state.layerGroup.clearLayers();
 
       if (!items.length) {
+        state.map.setView(DEFAULT_CENTER, DEFAULT_ZOOM);
         return;
       }
 
@@ -540,11 +544,15 @@
         });
         marker.addTo(state.layerGroup);
         creator.__markerIndex = index;
-        bounds.push([lat, lng]);
+        if (FOCUS_CITIES.has(creator.city)) {
+          bounds.push([lat, lng]);
+        }
       });
 
       if (bounds.length) {
         state.map.fitBounds(bounds, { padding: [36, 36], maxZoom: 12 });
+      } else {
+        state.map.setView(DEFAULT_CENTER, DEFAULT_ZOOM);
       }
     }
 
