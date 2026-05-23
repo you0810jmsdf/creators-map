@@ -836,8 +836,13 @@ function buildInfoWindowContent(creator, color, emoji) {
 }
 </script>
 
-<!-- Google Maps API（Code.gsのdoGetでAPIキーを埋め込み） -->
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5oRAuKsGBhK3GwGAPAoKPAdOM5C1IwGs&callback=initMap&language=ja" async defer></script>
+<!-- Google Maps API: 旧キーが GitHub に漏洩したため除去。
+     このルート版 index.html は GAS HtmlService 配信用の旧バージョンで、
+     現在の公開サイトは docs/index.html（Leaflet）に移行済み。
+     復活させる場合は doGet 側で template.apiKey をプロパティから注入し、
+     <script src=".../maps/api/js?key=<?= apiKey ?>&callback=initMap"> 形式で記述すること。
+-->
+<!-- <script src="https://maps.googleapis.com/maps/api/js?key=REMOVED&callback=initMap&language=ja" async defer></script> -->
 <script>(function(){var G='https://script.google.com/macros/s/AKfycbycw2FBvcm34mS9R8SUNg28KscGqqGjR1zjz3hnLYq8ckgKCZObYaC9kbMs8R2SGXgC/exec';var v=localStorage.getItem('cocola_vid');if(!v){v=Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);localStorage.setItem('cocola_vid',v);}new Image().src=G+'?mode=pageview&p='+encodeURIComponent('クリエイターズMAP')+'&vid='+encodeURIComponent(v);})();</script>
 
 </body>

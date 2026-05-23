@@ -5,7 +5,10 @@
 
 // ---- 設定 ここを環境に合わせて変更 ----
 const SHEET_NAME    = 'フォームの回答 2'; // フォーム回答シート名
-const MAPS_API_KEY  = 'AIzaSyB5oRAuKsGBhK3GwGAPAoKPAdOM5C1IwGs'; // Google Maps APIキー
+// Google Maps APIキー: 旧キーをハードコードしていたが GitHub に漏洩したため除去。
+// 再有効化する場合は、GASエディタの [プロジェクトの設定] → [スクリプト プロパティ] に
+// MAPS_API_KEY を登録すること。
+const MAPS_API_KEY  = PropertiesService.getScriptProperties().getProperty('MAPS_API_KEY') || '';
 
 // フォーム回答の列インデックス（0始まり）
 const COL = {
