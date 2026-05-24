@@ -148,6 +148,41 @@
       }
     }
 
+    .latest-notice {
+      margin: 10px 20px 0;
+      padding: 10px 14px;
+      background: linear-gradient(135deg, #fff7eb, #ffe9c8);
+      border: 1px solid #f0b23d;
+      border-radius: 12px;
+      color: #5a3a14;
+      font-size: 13px;
+      line-height: 1.5;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(235, 125, 42, 0.12);
+    }
+    .latest-notice[hidden] {
+      display: none;
+    }
+    .latest-notice .label {
+      display: inline-block;
+      padding: 2px 8px;
+      margin-right: 6px;
+      background: #eb7d2a;
+      color: #fff;
+      font-weight: bold;
+      font-size: 11px;
+      border-radius: 999px;
+      letter-spacing: 0.05em;
+    }
+    .latest-notice .name {
+      font-weight: bold;
+    }
+    .latest-notice .relative {
+      margin-left: 6px;
+      color: #8a6a3c;
+      font-size: 12px;
+    }
+
     .register-bar {
       padding: 12px 20px 4px;
       text-align: center;
@@ -441,6 +476,11 @@
         </div>
       </div>
     </header>
+
+    <div id="latest-notice" class="latest-notice" hidden>
+      <span class="label">新着</span>
+      <span class="content"></span>
+    </div>
 
     <div class="register-bar">
       <a class="register-btn" href="https://docs.google.com/forms/d/e/1FAIpQLSdcMWEJDLDc_gbnKCnT7lKbC0hcdqGBY26MdFbjOs1QApC5gA/viewform?usp=dialog" target="_blank" rel="noopener noreferrer">＋ 掲載登録する</a>
@@ -819,9 +859,55 @@
       }
     }
 
+    function formatRelativeDate(date) {
+      const diffMs = Date.now() - date.getTime();
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      if (diffDays <= 0) return '本日';
+      if (diffDays === 1) return '昨日';
+      if (diffDays < 7) return diffDays + '日前';
+      if (diffDays < 30) return Math.floor(diffDays / 7) + '週間前';
+      return Math.floor(diffDays / 30) + 'ヶ月前';
+    }
+
+    function updateLatestNotice(creators) {
+      const notice = document.getElementById('latest-notice');
+      if (!notice) return;
+
+      const withTs = creators
+        .filter(function(c) { return c && c.timestamp; })
+        .map(function(c) { return { name: c.name, date: new Date(c.timestamp) }; })
+        .filter(function(c) { return !isNaN(c.date.getTime()); })
+        .sort(function(a, b) { return b.date - a.date; });
+
+      if (withTs.length === 0) {
+        notice.hidden = true;
+        return;
+      }
+
+      const latest = withTs[0];
+      const y = latest.date.getFullYear();
+      const m = String(latest.date.getMonth() + 1).padStart(2, '0');
+      const d = String(latest.date.getDate()).padStart(2, '0');
+      const dateStr = y + '/' + m + '/' + d;
+      const relative = formatRelativeDate(latest.date);
+
+      notice.querySelector('.content').innerHTML =
+        '最新登録: ' + dateStr +
+        ' <span class="name">' + escapeHtml(latest.name) + '</span>' +
+        ' <span class="relative">（' + relative + '）</span>';
+      notice.hidden = false;
+    }
+
+    function escapeHtml(str) {
+      return String(str || '').replace(/[&<>"']/g, function(ch) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+      });
+    }
+
     function handleCreators(payload) {
       state.creators = Array.isArray(payload) ? payload : [];
       document.getElementById('count').textContent = String(state.creators.length);
+      updateLatestNotice(state.creators);
       buildFilterChips();
       applyFilters();
     }

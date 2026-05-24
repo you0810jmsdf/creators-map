@@ -1423,6 +1423,7 @@ function getCreators() {
       lng         : lng,
       isNew       : isNew,
       city        : city,
+      timestamp   : (ts instanceof Date) ? ts.toISOString() : null,
     });
   }
 
